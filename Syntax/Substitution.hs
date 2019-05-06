@@ -29,5 +29,5 @@ substitute (Abstraction y term) x replacement
   where
     termVars = freeVars term
     repVars = freeVars replacement
-    newVar = succ $ Set.findMax repVars
+    newVar = succ $ max (Set.findMax termVars) (Set.findMax repVars)
     renamed = substitute term y (VarTerm newVar)

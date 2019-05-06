@@ -8,8 +8,9 @@ import Syntax.Substitution
 x = Var 'x'
 y = Var 'y'
 z = Var 'z'
+t = Var 't'
 
-rep = readTerm "(λxy)"
+rep = readTerm "(λxt)"
 
 main = runTestTT $ test [
     "Substitution replaces a single variable" ~:
@@ -33,10 +34,14 @@ main = runTestTT $ test [
         substitute m x rep ~?= Abstraction z rep,
 
     "Substitution renames problematic bound variables in an abstraction's subterm" ~:
-      let m = readTerm "(λyx)" in
-        substitute m x rep ~?= Abstraction z rep,
+      let m = readTerm "(λtx)" in
+        substitute m x rep ~?= readTerm "(λy(λxt))",
 
-    "Substitution handles renaming in nested abstractions" ~:
-      let m = readTerm "(λz(λt((xt)(ty))))" in
-        substitute m x (readTerm "t") ~?= readTerm "(λz(λu((tu)(uy))))"
+    "Substitution renames bound variables that collide with any of the new variables" ~:
+      let m = readTerm "(λt(λy((xy)(ts))))" in
+        substitute m x (readTerm "t") ~?= readTerm "(λy(λz((tz)(ys))))",
+
+    "Substitution does not rename nested bound variables if those variables are unused" ~:
+      let m = readTerm "(λy(λtx))" in
+        substitute m x rep ~?= readTerm "(λy(λy(λxt)))"
   ]
